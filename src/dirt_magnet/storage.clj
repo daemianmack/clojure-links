@@ -3,20 +3,15 @@
   (:require [clojure.java.io :as io]))
 
 
-(let [db-host "localhost"
-      db-port 5432
-      db-name "lolserver"
-      db-user "lolserver"
-      db-password "b0c3phus"]
-  (def db-map
+(defn db-map []
+  (let [[_ user password host port database] (re-matches #"postgres://(?:(.+):(.*)@)?([^:]+)(?::(\d+))?/(.+)" (System/getenv "DATABASE_URL"))]
     {:subprotocol "postgresql"
-     :subname     (str "//" db-host ":" db-port "/" db-name)
+     :subname     (str "//" host ":" port "/" database)
      :classname   "org.postgresql.Driver"
-     :user        db-user
-     :password    db-password}))
+     :user        user
+     :password    password}))
 
-(def db (assoc db-map :connection (j/get-connection db-map)))
-
+(defn db []  (assoc (db-map) :connection (j/get-connection (db-map))))
 
 (def db-schema [:links
                 [:id          :serial]
@@ -27,23 +22,24 @@
                 [:created_at  "timestamp with time zone"]])
 
 (defn apply-schema []
+  (println (db))
   (try
-    (j/db-do-commands db false (apply j/create-table-ddl db-schema))
-    (j/db-do-commands db false "CREATE UNIQUE INDEX link_id ON links (id);")
+    (j/db-do-commands (db) false (apply j/create-table-ddl db-schema))
+    (j/db-do-commands (db) false "CREATE UNIQUE INDEX link_id ON links (id);")
     (catch Exception e
       (println e)
-      (.getNextException e))))
+      (println (.printStackTrace (.getCause e))))))
 
 (defn insert-into-table [[table data]]
   (try
-    (j/insert! db table data)
+    (j/insert! (db) table data)
     (catch Exception e
       (println e)
       (println (.getNextException e)))))
 
 (defn query [q]
   (try
-    (j/query db [q])
+    (j/query (db) [q])
     (catch Exception e
-      (println (.getNextException e))
-      (.getNextException e))))
+      (println e))))
+

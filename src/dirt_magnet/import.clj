@@ -57,8 +57,8 @@
   (j/update! s/db :links {:title title} (where {:id id}))
   (spit "foo.txt" (str (local-now) "++ " id ": " title "\n") :append true))
 
-;; (defn unresolved []
-;;   (j/query s/db ["select id, url from links where is_resolved != '1' and is_image != '1' limit 10"]))
+(defn unresolved []
+  (j/query s/db ["select id, url from links where is_resolved != '1' and is_image != '1' limit 10"]))
 
 (defn resolve-unresolved-titles []
   (map (fn [{:keys [id url]}]
