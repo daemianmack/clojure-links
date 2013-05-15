@@ -1,0 +1,41 @@
+@import url('//fonts.googleapis.com/css?family=Droid+Sans|Tangerine');
+
+body, td {
+  font-family: 'Droid Sans', 'lucida sans unicode',verdana,helvetica;
+  font-size: 82%;
+}
+
+.table td {
+  line-height: 21px;
+  padding: 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+a {
+  color: #e36b23;
+  text-decoration: none;
+}
+
+#header, #footer {
+  font-family: Tangerine, cursive;
+  font-size: 300%;
+  margin: 20px;
+  text-align: center;
+}
+
+#footer { font-size: 200%; }
+
+#main {
+  margin: auto;
+  width: 66%;
+}
+
+#links { margin: auto; }
+
+#links td:first-child {
+  font-size: 70%;
+  text-align: right;
+}
+
+#links img { width: 200px; border: 1px #eee;}
