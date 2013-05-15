@@ -1,7 +1,7 @@
-(ns bot-splatter.templates
+(ns dirt-magnet.templates
   (:use net.cgrand.enlive-html))
 
-(deftemplate layout "bot-splatter/public/design/layout.html"
+(deftemplate layout "dirt-magnet/public/design/layout.html"
   [body footer & {[level msg :as flash] :flash}]
   [:#main]   (html-content body)
   [:#footer] (html-content footer)

@@ -1,11 +1,11 @@
-(ns bot-splatter.import
-  (:require [bot-splatter.links :as links]
+(ns dirt-magnet.import
+  (:require [dirt-magnet.links :as links]
             [clojure.string :refer [split]]
             [clojure.java.io :as io]
             [clojure.java.jdbc :as j]
             [clojure.java.jdbc.sql :refer [where]]
             (clj-time [local :refer [local-now]])
-            [bot-splatter.storage :as s]))
+            [dirt-magnet.storage :as s]))
 
 
 (defn correct-sequence []

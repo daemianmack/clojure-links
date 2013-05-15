@@ -1,12 +1,12 @@
-(ns bot-splatter.storage
+(ns dirt-magnet.storage
   (:require [clojure.java.jdbc :as j])
   (:require [clojure.java.io :as io]))
 
 
 (let [db-host "localhost"
       db-port 5432
-      db-name "bot-splatter"
-      db-user "bot-splatter"
+      db-name "lolserver"
+      db-user "lolserver"
       db-password "b0c3phus"]
   (def db-map
     {:subprotocol "postgresql"

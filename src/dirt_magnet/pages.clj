@@ -1,4 +1,4 @@
-(ns bot-splatter.pages
+(ns dirt-magnet.pages
   (:use net.cgrand.enlive-html))
 
 
@@ -15,17 +15,17 @@
     (do-> (set-attr :href (:url link))
           (html-content title))))
 
-(defsnippet table-row "bot-splatter/public/design/index.html"
+(defsnippet table-row "dirt-magnet/public/design/index.html"
   [:#links :tbody [[:tr (nth-of-type 1)]]]
   [link]
   [[:td (nth-of-type 1)]]    (do-> (set-attr :title (:created_at link))
                                    (content (str (:source link) ">")))
   [[:td (nth-of-type 2)] :a] (do-link link))
 
-(deftemplate index "bot-splatter/public/design/index.html"
+(deftemplate index "dirt-magnet/public/design/index.html"
   [links]
   [:#links :tbody] (content (map table-row links)))
 
-(deftemplate footer "bot-splatter/public/design/footer.html"
+(deftemplate footer "dirt-magnet/public/design/footer.html"
   [page]
   [:a] (set-attr :href (str "/?p=" (+ 1 page))))

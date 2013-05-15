@@ -1,7 +1,7 @@
 (ns dev
   (:require [io.pedestal.service.http :as bootstrap]
-            [bot-splatter.service :as service]
-            [bot-splatter.server :as server]
+            [dirt-magnet.service :as service]
+            [dirt-magnet.server :as server]
             [ns-tracker.core :as tracker]))
 
 (def service (-> service/service ;; start with production configuration

@@ -1,6 +1,6 @@
-(ns bot-splatter.server
+(ns dirt-magnet.server
   (:gen-class) ; for -main method in uberjar
-  (:require [bot-splatter.service :as service]
+  (:require [dirt-magnet.service :as service]
             [io.pedestal.service.http :as bootstrap]))
 
 (def service-instance

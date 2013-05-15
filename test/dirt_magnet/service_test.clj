@@ -1,8 +1,8 @@
-(ns bot-splatter.service-test
+(ns dirt-magnet.service-test
   (:require [clojure.test :refer :all]
             [io.pedestal.service.test :refer :all]
             [io.pedestal.service.http :as bootstrap]
-            [bot-splatter.service :as service]))
+            [dirt-magnet.service :as service]))
 
 (def service
   (::bootstrap/service-fn (bootstrap/create-servlet service/service)))

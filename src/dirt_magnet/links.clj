@@ -1,8 +1,8 @@
-(ns bot-splatter.links
+(ns dirt-magnet.links
   (:require (clj-time [format :as f]
                       [coerce :as c]
                       [local :refer [local-now]])
-            [bot-splatter.storage :as s])
+            [dirt-magnet.storage :as s])
   (:use [net.cgrand.enlive-html]))
 
 

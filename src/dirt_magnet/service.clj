@@ -1,4 +1,4 @@
-(ns bot-splatter.service
+(ns dirt-magnet.service
   (:require [clojure.java.io :as io]
             [clojure.string :as string]
             [io.pedestal.service.http :as bootstrap]
@@ -8,13 +8,13 @@
             [io.pedestal.service.http.ring-middlewares :as middlewares]
             [ring.middleware.session.cookie :as cookie]
             [ring.util.response :as ring-resp]
-            [bot-splatter.links :as links]
-            [bot-splatter.pages :as pages]
-            [bot-splatter.templates :as templates]))
+            [dirt-magnet.links :as links]
+            [dirt-magnet.pages :as pages]
+            [dirt-magnet.templates :as templates]))
 
 (defn layout*
   [path {:keys [flash]}]
-  (when-let [res (-> (str "bot-splatter/public/design/" path) io/resource)]
+  (when-let [res (-> (str "dirt-magnet/public/design/" path) io/resource)]
     (-> (slurp res)
         (templates/layout :flash flash)
         string/join
@@ -64,7 +64,7 @@
 ;; You can use this fn or a per-request fn via io.pedestal.service.http.route/url-for
 (def url-for (route/url-for-routes routes))
 
-;; Consumed by bot-splatter.server/create-server
+;; Consumed by dirt-magnet.server/create-server
 (def service {:env :prod
               ;; You can bring your own non-default interceptors. Make
               ;; sure you include routing and set it up right for
