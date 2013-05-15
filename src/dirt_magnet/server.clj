@@ -13,8 +13,8 @@
   (alter-var-root #'service-instance
                   (constantly (bootstrap/create-server (merge service/service opts)))))
 
-(defn -main [& args]
-  (create-server)
+(defn -main [port]
+  (create-server {::bootstrap/port (Integer. port)})
   (bootstrap/start service-instance))
 
 
