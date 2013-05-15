@@ -10,7 +10,8 @@
             [ring.util.response :as ring-resp]
             [dirt-magnet.links :as links]
             [dirt-magnet.pages :as pages]
-            [dirt-magnet.templates :as templates]))
+            [dirt-magnet.templates :as templates]
+            [dirt-magnet.approval :refer [creation-approved? creation-denied]]))
 
 (defn layout*
   [path {:keys [flash]}]
@@ -45,9 +46,12 @@
       ring-resp/response
       (ring-resp/content-type "text/html")))
 
-(defn create-link [{:keys [params]}]
-  (links/store-link params)
-  (ring-resp/response params))
+(defn create-link [{:keys [params] :as request}]
+  "Pass request through user-supplied approval fn, referring failures to denial fn.
+   TODO: Make denial fn optional."
+  (if (creation-approved? request)
+    (ring-resp/response (links/store-link (select-keys params [:source :url])))
+    (ring-resp/response (creation-denied request))))
 
 (defroutes routes
   [[["/" {:get index-page}
