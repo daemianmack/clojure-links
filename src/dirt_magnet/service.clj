@@ -33,12 +33,13 @@
   [request]
   (ring-resp/response (format "Clojure %s" (clojure-version))))
 
+(declare url-for)
 (defn get-index-page
   [request]
   (let [page   (or (some-> request :query-params :p Integer.) 1)
         links  (links/get-links (- page 1))
         body   (apply str (pages/index links))
-        footer (apply str (pages/footer page))]
+        footer (apply str (pages/footer page url-for))]
     (apply str (templates/layout body footer))))
 
 (defn index-page [request]
@@ -54,7 +55,7 @@
     (ring-resp/response (creation-denied request))))
 
 (defroutes routes
-  [[["/" {:get index-page}
+  [[["/" {:get [::index-page index-page]}
      ^:interceptors [(body-params/body-params)
                      middlewares/keyword-params
                      (middlewares/session

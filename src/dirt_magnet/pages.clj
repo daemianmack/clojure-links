@@ -27,5 +27,5 @@
   [:#links :tbody] (content (map table-row links)))
 
 (deftemplate footer "dirt-magnet/public/design/footer.html"
-  [page]
-  [:a] (set-attr :href (str "/?p=" (+ 1 page))))
+  [page url-fn]
+  [:a] (set-attr :href (str (url-fn ::dirt-magnet.service/index-page) "?p=" (+ 1 page))))
