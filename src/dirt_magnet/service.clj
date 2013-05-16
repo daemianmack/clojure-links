@@ -46,11 +46,11 @@
       ring-resp/response
       (ring-resp/content-type "text/html")))
 
-(defn create-link [{:keys [params] :as request}]
+(defn create-link [{{:keys [source url]} :params} request]
   "Pass request through user-supplied approval fn, referring failures to denial fn.
    TODO: Make denial fn optional."
   (if (creation-approved? request)
-    (ring-resp/response (links/store-link (select-keys params [:source :url])))
+    (ring-resp/response (links/store-link {:source source :url url}))
     (ring-resp/response (creation-denied request))))
 
 (defroutes routes
