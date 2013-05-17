@@ -15,17 +15,17 @@
     (do-> (set-attr :href (:url link))
           (html-content title))))
 
-(defsnippet table-row "dirt-magnet/public/design/index.html"
+(defsnippet table-row "public/design/main.html"
   [:#links :tbody [[:tr (nth-of-type 1)]]]
   [link]
   [[:td (nth-of-type 1)]]    (do-> (set-attr :title (:created_at link))
                                    (content (str (:source link) ">")))
   [[:td (nth-of-type 2)] :a] (do-link link))
 
-(deftemplate index "dirt-magnet/public/design/index.html"
+(deftemplate index "public/design/main.html"
   [links]
   [:#links :tbody] (content (map table-row links)))
 
-(deftemplate footer "dirt-magnet/public/design/footer.html"
+(deftemplate footer "public/design/footer.html"
   [page url-fn]
   [:a] (set-attr :href (str (url-fn ::dirt-magnet.service/index-page) "?p=" (+ 1 page))))
