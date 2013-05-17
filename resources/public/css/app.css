@@ -1,11 +1,11 @@
 @import url('//fonts.googleapis.com/css?family=Droid+Sans|Tangerine');
 
 body, td {
-  font-family: 'Droid Sans', 'lucida sans unicode',verdana,helvetica;
+  font-family: 'Droid Sans', 'lucida sans unicode', verdana, helvetica;
   font-size: 82%;
 }
 
-.table td {
+table td {
   line-height: 21px;
   padding: 8px;
   text-align: left;
