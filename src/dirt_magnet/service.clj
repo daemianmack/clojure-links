@@ -13,15 +13,18 @@
             [dirt-magnet.pages :as pages]
             [dirt-magnet.acceptance :as a]))
 
+(defn tmpl [template & data]
+  (apply str (apply template data)))
 
 (declare url-for)
 (defn get-index-page
   [request]
   (let [page   (or (some-> request :query-params :p Integer.) 1)
         links  (links/get-links (- page 1))
-        body   (apply str (pages/index links))
-        footer (apply str (pages/footer page url-for))]
-    (apply str (templates/layout body footer))))
+        header (tmpl pages/header url-for)
+        body   (tmpl pages/index links)
+        footer (tmpl pages/footer page url-for)]
+    (apply str (templates/layout header body footer))))
 
 (defn index-page [request]
   (-> (get-index-page request)
