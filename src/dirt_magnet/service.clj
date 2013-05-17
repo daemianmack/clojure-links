@@ -13,25 +13,7 @@
             [dirt-magnet.templates :as templates]
             [dirt-magnet.approval :refer [creation-approved? creation-denied]]))
 
-(defn layout*
-  [path {:keys [flash]}]
-  (when-let [res (-> (str "dirt-magnet/public/design/" path) io/resource)]
-    (-> (slurp res)
-        (templates/layout :flash flash)
-        string/join
-        ring-resp/response
-        (ring-resp/content-type "text/html"))))
 
-(defn layout
-  "Returns a handler that renders content from the design
-   directory, with flash, wrapped in layout."
-  [path]
-  (fn [request]
-     (layout* path request)))
-
-(defn about-page
-  [request]
-  (ring-resp/response (format "Clojure %s" (clojure-version))))
 
 (declare url-for)
 (defn get-index-page
