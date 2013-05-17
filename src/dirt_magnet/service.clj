@@ -9,10 +9,9 @@
             [ring.middleware.session.cookie :as cookie]
             [ring.util.response :as ring-resp]
             [dirt-magnet.links :as links]
-            [dirt-magnet.pages :as pages]
             [dirt-magnet.templates :as templates]
-            [dirt-magnet.approval :refer [creation-approved? creation-denied]]))
-
+            [dirt-magnet.pages :as pages]
+            [dirt-magnet.acceptance :as a]))
 
 
 (declare url-for)
@@ -30,11 +29,11 @@
       (ring-resp/content-type "text/html")))
 
 (defn create-link [{{:keys [source url]} :params :as request}]
-  "Pass request through user-supplied approval fn, referring failures to denial fn.
-   TODO: Make denial fn optional."
-  (if (creation-approved? request)
-    (ring-resp/response (links/store-link {:source source :url url}))
-    (ring-resp/response (creation-denied request))))
+  "Pass request through user-supplied acceptance fn, referring failures to rejected fn.
+   TODO: Make accepted/rejected fns optional."
+  (if (a/link-acceptable? request)
+    (-> {:source source :url url} links/store-link (a/link-accepted request) ring-resp/response)
+    (-> request a/link-rejected ring-resp/response)))
 
 (defroutes routes
   [[["/" {:get [::index-page index-page]}
