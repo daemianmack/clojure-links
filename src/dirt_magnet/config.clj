@@ -1,4 +1,4 @@
-(ns dirt-magnet.acceptance)
+(ns dirt-magnet.config)
 
 (defn link-acceptable? [{:keys [params]}]
   (println "link-acceptable? is considering a POST with params " params)

@@ -11,7 +11,8 @@
             [dirt-magnet.links :as links]
             [dirt-magnet.templates :as templates]
             [dirt-magnet.pages :as pages]
-            [dirt-magnet.acceptance :as a]))
+            [dirt-magnet.config :as c]))
+
 
 (defn tmpl [template & data]
   (apply str (apply template data)))
@@ -34,9 +35,9 @@
 (defn create-link [{{:keys [source url]} :params :as request}]
   "Pass request through user-supplied acceptance fn, referring failures to rejected fn.
    TODO: Make accepted/rejected fns optional."
-  (if (a/link-acceptable? request)
-    (-> {:source source :url url} links/store-link (a/link-accepted request) ring-resp/response)
-    (-> request a/link-rejected ring-resp/response)))
+  (if (c/link-acceptable? request)
+    (-> {:source source :url url} links/store-link (c/link-accepted request) ring-resp/response)
+    (-> request c/link-rejected ring-resp/response)))
 
 (defroutes routes
   [[["/" {:get [::index-page index-page]}
