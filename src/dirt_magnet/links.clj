@@ -2,13 +2,9 @@
   (:require (clj-time [format :as f]
                       [coerce :as c]
                       [local :refer [local-now]])
-            [dirt-magnet.storage :as s])
+            [dirt-magnet.storage :as s]
+            [dirt-magnet.config :as config])
   (:use [net.cgrand.enlive-html]))
-
-
-(def links-per-page 40)
-
-(def nice-format (f/formatter "yyyy-MM-dd HH:mm:ss"))
 
 
 (defn get-title [url]
@@ -16,13 +12,13 @@
 
 (defn now->nice-format []
   "Get local now suitable for passing to nice-format->timestamp."
-  (f/unparse nice-format (local-now)))
+  (f/unparse config/nice-format (local-now)))
 
 (defn nice-format->timestamp
   "Accept input in nice-format, transmute to SQL-storable format."
-  ([date] (->> date
-               (f/parse nice-format)
-               c/to-timestamp)))
+  [date] (->> date
+              (f/parse config/nice-format)
+              c/to-timestamp))
 
 (defn is-image? [url]
   "Force boolean response to regex searches."
@@ -46,7 +42,7 @@
 (defn get-links
   ([] (get-links 0))
   ([page]
-     (let [offset (* page links-per-page)]
-       (s/query (str "select * from links order by created_at desc limit " links-per-page " offset " offset)))))
+     (let [offset (* page config/links-per-page)]
+       (s/query (str "select * from links order by created_at desc limit " config/links-per-page " offset " offset)))))
 
 
