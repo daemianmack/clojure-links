@@ -10,17 +10,18 @@
 (def nice-format (f/formatter "yyyy-MM-dd HH:mm:ss"))
 
 
-(defn log [msg]
-  (when debug (println msg)))
+(defn log [& msg]
+  (when debug (apply println (concat msg "\n"))))
+
 
 (defn link-acceptable? [{:keys [params]}]
-  (println "link-acceptable? is considering a POST with params " params)
+  (log "link-acceptable? is considering a POST with params" params)
   (= "professor-falken" (:password params)))
 
 (defn link-accepted [creation-result request]
-  (log "+++ Accepted a POST for params " (:params request))
   creation-result)
+  (log "+++ Accepted a POST for params" (:params request))
 
 (defn link-rejected [request]
-  (log "--- Rejected a POST for request " request)
   "Nope!")
+  (log "--- Rejected a POST for request" request)
