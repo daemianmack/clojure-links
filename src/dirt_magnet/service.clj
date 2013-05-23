@@ -33,11 +33,12 @@
       (ring-resp/content-type "text/html")))
 
 (defn create-link [{{:keys [source url]} :params :as request}]
-  "Pass request through user-supplied acceptance fn, referring failures to rejected fn.
-   TODO: Make accepted/rejected fns optional."
+  "Pass request to user-supplied acceptance fn, referring responses to user accepted/denied fns."
   (if (c/link-acceptable? request)
-    (-> {:source source :url url} links/store-link (c/link-accepted request) ring-resp/response)
-    (-> request c/link-rejected ring-resp/response)))
+    (-> {:source source :url url}
+        links/store-link
+        (c/link-accepted request))
+    (c/link-rejected request)))
 
 (defroutes routes
   [[["/" {:get [::index-page index-page]}
