@@ -11,7 +11,7 @@
      :user        user
      :password    password}))
 
-(defn db []  (assoc (db-map) :connection (j/get-connection (db-map))))
+(def db (assoc (db-map) :connection (j/get-connection (db-map))))
 
 (def db-schema [:links
                 [:id          :serial]
@@ -22,24 +22,23 @@
                 [:created_at  "timestamp with time zone"]])
 
 (defn apply-schema []
-  (println (db))
   (try
-    (j/db-do-commands (db) false (apply j/create-table-ddl db-schema))
-    (j/db-do-commands (db) false "CREATE UNIQUE INDEX link_id ON links (id);")
+    (j/db-do-commands db false (apply j/create-table-ddl db-schema))
+    (j/db-do-commands db false "CREATE UNIQUE INDEX link_id ON links (id);")
     (catch Exception e
       (println e)
       (println (.printStackTrace (.getCause e))))))
 
 (defn insert-into-table [[table data]]
   (try
-    (j/insert! (db) table data)
+    (j/insert! db table data)
     (catch Exception e
       (println e)
       (println (.getNextException e)))))
 
 (defn query [q]
   (try
-    (j/query (db) [q])
+    (j/query db [q])
     (catch Exception e
       (println e))))
 
