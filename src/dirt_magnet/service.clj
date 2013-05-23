@@ -42,14 +42,7 @@
 
 (defroutes routes
   [[["/" {:get [::index-page index-page]}
-     ^:interceptors [(body-params/body-params)
-                     middlewares/keyword-params
-                     (middlewares/session
-                      {:store (cookie/cookie-store
-                               {:key "asw23tasd9y4nbas"})})
-                     middlewares/flash
-                     bootstrap/html-body
-                     middlewares/file-info]
+     ^:interceptors [(body-params/body-params) middlewares/keyword-params]
      ["/links" {:post create-link}]]]])
 
 ;; You can use this fn or a per-request fn via io.pedestal.service.http.route/url-for
