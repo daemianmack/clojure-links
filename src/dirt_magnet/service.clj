@@ -30,7 +30,8 @@
 (defn index-page [request]
   (-> (get-index-page request)
       ring-resp/response
-      (ring-resp/content-type "text/html")))
+      (ring-resp/content-type "text/html")
+      (ring-resp/charset "UTF-8")))
 
 (defn create-link [{{:keys [source url]} :params :as request}]
   "Pass request to user-supplied acceptance fn, referring responses to user accepted/denied fns."
