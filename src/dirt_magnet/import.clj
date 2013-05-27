@@ -32,7 +32,7 @@
   (fix-data)
   (correct-sequence))
 
-(defn import-log [log]
+(defn import-weechat-log [log]
   (with-open [rdr (io/reader (io/resource log))]
     (doseq [line (line-seq rdr)]
       (when (and (re-find #"https?://[^\s]+" line)
@@ -64,23 +64,3 @@
 (defn do-full-import []
   (import-mysql-dump "links.txt")
   (import-log "irc_log.txt"))
-
-
-
-;; bulk-resolve link titles
-(defn bail [id msg]
-  (spit "foo.txt" (str (local-now) "xx " id ": " msg "\n") :append true))
-
-(defn record [id title]
-  (j/update! s/db :links {:title title} (where {:id id}))
-  (spit "foo.txt" (str (local-now) "++ " id ": " title "\n") :append true))
-
-(defn unresolved []
-  (j/query s/db ["select id, url from links where is_resolved != '1' and is_image != '1' limit 10"]))
-
-(defn resolve-unresolved-titles []
-  (map (fn [{:keys [id url]}]
-         (future (try
-                   (record id (links/get-title url))
-                   (catch Exception e (bail id e)))))
-       (unresolved)))
