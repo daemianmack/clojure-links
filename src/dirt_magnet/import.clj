@@ -43,6 +43,24 @@
           (links/store-link {:url url :source source :created_at created_at})))))
   (correct-sequence))
 
+(defn import-clojure-log [dir]
+  "Enumerate all files beneath the supplied dir, find lines containing a URL,
+   and parse the particular IRC log format thereof to persist url, source, and
+   created_at.
+   More work could be done here to clean leading/trailing punctuation out of
+   URLs referenced in the middle of a sentence."
+  (doseq [file (-> dir io/resource io/file file-seq rest)]
+    (with-open [rdr (io/reader file)]
+      (doseq [line (line-seq rdr)]
+        (when (re-find #"https?://[^\s]+" line)
+          (let [[brackets-time source-colon line] (split line #"\s" 3)
+                yyyyddmm   (-> file .getName (subs 0 10))
+                created_at (str yyyyddmm " " (apply str (butlast (rest brackets-time))))
+                source     (apply str (butlast source-colon))
+                url        (re-find #"https?://[^\s]+" line)]
+            (links/store-link {:url url :source source :created_at created_at}))))))
+  (correct-sequence))
+
 (defn do-full-import []
   (import-mysql-dump "links.txt")
   (import-log "irc_log.txt"))
