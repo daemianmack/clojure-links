@@ -9,6 +9,10 @@
 
 (def nice-format (f/formatter "yyyy-MM-dd HH:mm:ss"))
 
+(def http-params
+  "Used for fetching content-type and bodies for URLs."
+  {:socket-timeout 10000 :conn-timeout 10000 :max-redirects 5})
+
 
 (defn log [& msg]
   (when debug (apply println (concat msg "\n"))))

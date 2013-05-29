@@ -1,6 +1,7 @@
 (ns dirt-magnet.storage
-  (:require [clojure.java.jdbc :as j])
-  (:require [clojure.java.io :as io]))
+  (:require [clojure.java.jdbc :as j]
+            [clojure.java.jdbc.sql :refer [where]]
+            [clojure.java.io :as io]))
 
 
 (defn db-map []
@@ -26,19 +27,14 @@
     (j/db-do-commands db false (apply j/create-table-ddl db-schema))
     (j/db-do-commands db false "CREATE UNIQUE INDEX link_id ON links (id);")
     (catch Exception e
-      (println e)
-      (println (.printStackTrace (.getCause e))))))
+      (println e))))
 
-(defn insert-into-table [[table data]]
-  (try
-    (j/insert! db table data)
-    (catch Exception e
-      (println e)
-      (println (.getNextException e)))))
+(defn insert-into-table [table data]
+  (j/insert! db table data))
+
+(defn update-table [table data where-data]
+  (j/update! db table data (where where-data)))
 
 (defn query [q]
-  (try
-    (j/query db [q])
-    (catch Exception e
-      (println e))))
+  (j/query db [q]))
 
