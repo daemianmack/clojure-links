@@ -1,12 +1,9 @@
 (ns dirt-magnet.service
-  (:require [clojure.java.io :as io]
-            [clojure.string :as string]
-            [io.pedestal.service.http :as bootstrap]
+  (:require [io.pedestal.service.http :as bootstrap]
             [io.pedestal.service.http.route :as route]
             [io.pedestal.service.http.body-params :as body-params]
             [io.pedestal.service.http.route.definition :refer [defroutes]]
             [io.pedestal.service.http.ring-middlewares :as middlewares]
-            [ring.middleware.session.cookie :as cookie]
             [ring.util.response :as ring-resp]
             [dirt-magnet.links :as links]
             [dirt-magnet.templates :as templates]
