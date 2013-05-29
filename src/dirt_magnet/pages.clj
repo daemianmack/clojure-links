@@ -1,11 +1,12 @@
 (ns dirt-magnet.pages
+  (:require [dirt-magnet.config :as config])
   (:use net.cgrand.enlive-html))
 
 
 (deftemplate header "public/design/header.html"
   [url-fn]
   [:a] (do-> (set-attr :href (url-fn ::dirt-magnet.service/index-page))
-                      (content "lolserver.")))
+                      (content config/title)))
 
 (defn do-link-title [link]
   (apply str (take 80 (or (:title link) (:url link)))))

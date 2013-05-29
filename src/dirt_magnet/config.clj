@@ -3,6 +3,9 @@
             [ring.util.response :refer [response]]))
 
 
+
+(def title "dirt magnet")
+
 (def debug true)
 
 (def links-per-page 40)
