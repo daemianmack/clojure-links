@@ -9,8 +9,8 @@
 
 
 (defn correct-sequence []
-  (let [[{:keys [max]}] (j/query s/db ["select max(id) from links"])]
-    (j/query s/db [(str "select setval('links_id_seq', " max ")")])))
+  (let [[{:keys [max]}] (j/query (s/db) ["select max(id) from links"])]
+    (j/query (s/db) [(str "select setval('links_id_seq', " max ")")])))
 
 (def boolint {"0" false "1" true "\\N" false})
 
@@ -22,7 +22,7 @@
       :url url :is_image is_image :created_at created_at})))
 
 (defn fix-data []
-  (j/update! s/db :links {:title nil} (where {:title ""})))
+  (j/update! (s/db) :links {:title nil} (where {:title ""})))
 
 (defn import-mysql-dump [file]
   (with-open [rdr (io/reader (io/resource file))]
