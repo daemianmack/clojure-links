@@ -63,4 +63,4 @@
 
 (defn do-full-import []
   (import-mysql-dump "links.txt")
-  (import-log "irc_log.txt"))
+  (import-weechat-log "irc_log.txt"))
