@@ -46,6 +46,9 @@
               (f/parse config/nice-format)
               c/to-timestamp))
 
+(defn post-process-link [id url is_image start]
+  (future (fetch-title-if-html id url is_image)))
+
 (defn insert-link
   [{:keys [id title source url is_image created_at] :as data}]
   (let [data (assoc data :created_at (if created_at
@@ -57,7 +60,7 @@
 
 (defn store-link [data]
   (let [[{:keys [id url is_image] :as result}] (insert-link data)]
-    (future (fetch-title-if-html id url is_image (local-now)))
+    (post-process-link id url is_image (local-now))
     result))
 
 (defn get-links
