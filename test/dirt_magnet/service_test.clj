@@ -43,7 +43,6 @@
 
 (deftest exercise-view-path
   (with-redefs [storage/query (constantly (list good-body))]
-#_(println (:body (response-for service :get "/")))
     (is (.contains (:body (response-for service :get "/"))
                    (:url good-body)))))
 
