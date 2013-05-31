@@ -34,7 +34,12 @@
 (deftest accept-create-link
   (with-redefs [config/link-acceptable? test-acceptance-fn
                 config/link-accepted    stub-accepted-fn]
-    (is (= :accepted (service/create-link {:params good-body})))))
+    (bond/with-stub [links/store-link]
+      (is (= :accepted (service/create-link {:params good-body})))
+      (is (= 1 (count (bond/calls links/store-link))))
+      (is (= {:url "http://grues.com"
+              :source "grue"}
+             ((comp first :args first) (bond/calls links/store-link)))))))
 
 (deftest reject-create-link
   (with-redefs [config/link-acceptable? test-acceptance-fn
