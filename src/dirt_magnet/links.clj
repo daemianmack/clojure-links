@@ -23,8 +23,8 @@
       (second (re-find #"<title>(.*?)</title>" (.replaceAll body "[\t\n\r]+" " "))))))
 
 (defn is-html? [url]
-  (re-find #"text/html"
-           (-> url client/get :headers (#(%1 "content-type")))))
+  (not (nil? (re-find #"text/html"
+                      (-> url client/head :headers (#(%1 "content-type")))))))
 
 (defn is-image? [url]
   "Force boolean response to regex searches."
