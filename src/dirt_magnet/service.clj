@@ -21,10 +21,7 @@
     (tmpl templates/index links page url-for)))
 
 (defn index-page [request]
-  (-> (get-index-page request)
-      ring-resp/response
-      (ring-resp/content-type "text/html")
-      (ring-resp/charset "UTF-8")))
+  (ring-resp/response (get-index-page request)))
 
 (defn create-link [{{:keys [source url]} :params :as request}]
   "Pass request to user-supplied acceptance fn, referring responses to user accepted/denied fns."
@@ -36,7 +33,9 @@
 
 (defroutes routes
   [[["/" {:get [::index-page index-page]}
-     ^:interceptors [(body-params/body-params) middlewares/keyword-params]
+     ^:interceptors [body-params/body-params
+                     middlewares/keyword-params
+                     bootstrap/html-body]
      ["/links" {:post create-link}]]]])
 
 (def url-for (route/url-for-routes routes))
