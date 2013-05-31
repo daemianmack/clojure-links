@@ -7,7 +7,6 @@
             [ring.util.response :as ring-resp]
             [dirt-magnet.links :as links]
             [dirt-magnet.templates :as templates]
-            [dirt-magnet.pages :as pages]
             [dirt-magnet.config :as c]))
 
 
@@ -17,12 +16,9 @@
 (declare url-for)
 (defn get-index-page
   [request]
-  (let [page   (or (some-> request :query-params :p Integer.) 1)
-        links  (links/get-links (- page 1))
-        header (tmpl pages/header url-for)
-        body   (tmpl pages/index links)
-        footer (tmpl pages/footer page url-for)]
-    (apply str (templates/layout header body footer))))
+  (let [page  (or (some-> request :query-params :p Integer.) 1)
+        links (links/get-links (- page 1))]
+    (tmpl templates/index links page url-for)))
 
 (defn index-page [request]
   (-> (get-index-page request)
