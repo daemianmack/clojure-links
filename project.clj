@@ -22,7 +22,8 @@
                  [org.clojure/java.jdbc "0.3.0-alpha3"]
                  [postgresql "9.1-901.jdbc4"]
                  [enlive "1.1.1"]
-                 [clj-http "0.7.2"]]
+                 [clj-http "0.7.2"]
+                 [bond "0.2.5"]]
   :profiles {:dev {:source-paths ["dev"]}}
   :min-lein-version "2.0.0"
   :resource-paths ["config" "resources"]
