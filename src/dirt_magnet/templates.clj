@@ -24,9 +24,10 @@
   [[:td (nth-of-type 2)] :a] (do-link link))
 
 (deftemplate index "public/design/layout.html"
-  [links page url-fn]
+  [links page next-page url-fn]
   [:#links :tbody] (content (map table-row links))
   [:#header :a] (do-> (set-attr :href (url-fn ::dirt-magnet.service/index-page))
                       (content config/title))
-  [:#footer :a] (set-attr :href (str (url-fn ::dirt-magnet.service/index-page) "?p=" (+ 1 page)))
+  [:#footer :a] (when next-page
+                  (set-attr :href (str (url-fn ::dirt-magnet.service/index-page) "?p=" (+ 1 page))))
 )

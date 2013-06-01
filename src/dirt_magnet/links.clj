@@ -68,3 +68,7 @@
   ([page]
      (let [offset (* page config/links-per-page)]
        (s/query (str "select * from links order by created_at desc limit " config/links-per-page " offset " offset)))))
+
+(defn page-exists? [page]
+  (< 0 (count (get-links page))))
+
