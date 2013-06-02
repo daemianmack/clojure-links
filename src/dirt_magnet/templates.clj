@@ -16,7 +16,7 @@
     (do-> (set-attr :href (:url link))
           (html-content title))))
 
-(defsnippet table-row "public/design/main.html"
+(defsnippet table-row "public/design/layout.html"
   [:#links :tbody [[:tr (nth-of-type 1)]]]
   [link]
   [[:td (nth-of-type 1)]]    (do-> (set-attr :title (:created_at link))
