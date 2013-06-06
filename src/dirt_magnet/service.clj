@@ -29,11 +29,11 @@
 
 (defn create-link [{{:keys [source url]} :params :as request}]
   "Pass request to user-supplied acceptance fn, referring responses to user accepted/denied fns."
-  (if (c/link-acceptable? request)
+  (if-not (c/link-acceptable? request)
+    (c/link-rejected request)
     (let [[{:keys [id] :as result}] (links/insert-link {:source source :url url})]
       (future (-> id links/fetch-title-if-html templates/str-row subs/send-to-subscribers))
-      (c/link-accepted result request))
-    (c/link-rejected request)))
+      (c/link-accepted result request))))
 
 (defn register-user-for-updates
   "Saves context for SSE streaming."
