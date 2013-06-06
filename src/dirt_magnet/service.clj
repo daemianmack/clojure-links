@@ -20,8 +20,9 @@
   [request]
   (let [page  (or (some-> request :query-params :p Integer.) 1)
         links (links/get-links (- page 1))
-        next  (links/page-exists? page)]
-    (tmpl templates/index links page next url-for)))
+        next-page? (links/page-exists? page)
+        page-route (url-for ::index-page)]
+    (tmpl templates/index links page next-page? page-route)))
 
 (defn index-page [request]
   (ring-resp/response (get-index-page request)))
