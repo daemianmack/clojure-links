@@ -13,7 +13,7 @@
 
                  ;; auto-reload changes
                  [ns-tracker "0.2.1"]
-                 
+
                  ;; Logging
                  [ch.qos.logback/logback-classic "1.0.7"]
                  [org.slf4j/jul-to-slf4j "1.7.2"]
