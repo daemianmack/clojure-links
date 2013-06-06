@@ -2,10 +2,12 @@
   (:require [clojure.test :refer [deftest is]]
             [io.pedestal.service.test :refer :all]
             [io.pedestal.service.http :as bootstrap]
+            [io.pedestal.service.http.sse :as sse]
             [dirt-magnet.service :as service]
             [dirt-magnet.config :as config]
             [dirt-magnet.links :as links]
             [dirt-magnet.storage :as storage]
+            [dirt-magnet.subscriptions :as subs]
             [ring.util.response :refer [response]]
             [bond.james :as bond]))
 
@@ -34,12 +36,12 @@
 (deftest accept-create-link
   (with-redefs [config/link-acceptable? test-acceptance-fn
                 config/link-accepted    stub-accepted-fn]
-    (bond/with-stub [links/store-link]
+    (bond/with-stub [links/insert-link]
       (is (= :accepted (service/create-link {:params good-body})))
-      (is (= 1 (count (bond/calls links/store-link))))
+      (is (= 1 (count (bond/calls links/insert-link))))
       (is (= {:url "http://grues.com"
               :source "grue"}
-             ((comp first :args first) (bond/calls links/store-link)))))))
+             ((comp first :args first) (bond/calls links/insert-link)))))))
 
 (deftest reject-create-link
   (with-redefs [config/link-acceptable? test-acceptance-fn
@@ -55,16 +57,27 @@
   (with-redefs [config/link-acceptable? test-acceptance-fn
                 config/link-accepted    (fn [_ r] (merge r {:status 201}))]
     (bond/with-stub [storage/insert-into-table
-                     links/post-process-link]
+                     links/fetch-title-if-html]
       (is (= 201 (:status (response-for service
                                         :post "/links"
                                         :body (form-encode good-body)
                                         :headers headers))))
       (is (= 1 (count (bond/calls storage/insert-into-table))))
-      (is (= 1 (count (bond/calls links/post-process-link))))
+      (is (= 1 (count (bond/calls links/fetch-title-if-html))))
       (is (= {:is_image false
               :source "grue"
               :url "http://grues.com"}
              (select-keys ((comp second :args first)
                            (bond/calls storage/insert-into-table))
                           [:is_image :source :url]))))))
+
+(deftest removing-bad-subscriber-contexts
+  (let [fake-data (atom {:a 'a :b 'b :c 'c})
+        msg       (atom "hi")]
+    (with-redefs [subs/subscribers fake-data
+                  sse/send-event (fn [ctxt _ _]
+                                   (when (= ctxt 'b)
+                                     (throw (java.io.IOException.))))]
+      (bond/with-stub [sse/end-event-stream]
+        (subs/send-to-subscribers msg)
+        (is (= (dissoc @fake-data :b) @subs/subscribers))))))

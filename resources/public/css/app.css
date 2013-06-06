@@ -31,11 +31,15 @@ a {
   width: 66%;
 }
 
-#links { margin: auto; }
+#links {
+  margin: auto;
+  width: 60em;
+}
 
 #links td:first-child {
   font-size: 70%;
   text-align: right;
+  width: 10em;
 }
 
 #links img { width: 200px; border: 1px #eee;}

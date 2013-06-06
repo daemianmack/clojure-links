@@ -2,25 +2,22 @@
   (:require (clj-time [format :as f]
                       [coerce :as c]
                       [local :refer [local-now]])
+            [io.pedestal.service.http.sse :as sse]
             [dirt-magnet.storage :as s]
             [dirt-magnet.config :as config]
             [clj-http.client :as client])
   (:use [net.cgrand.enlive-html]))
 
-
 (defn get-body [url]
-  "Return body of URL. If failure, return URL."
+  "Return body of URL. If failure, return nil."
   (try
     ((client/get url config/http-params) :body)
-    (catch Exception e
-      url)))
+    (catch Exception e)))
 
 (defn get-title [url]
   "Return the scraped title of the URL for good URLs, or the URL itself for failed URL fetches."
   (when-let [body (get-body url)]
-    (if (= body url)
-      url
-      (second (re-find #"<title>(.*?)</title>" (.replaceAll body "[\t\n\r]+" " "))))))
+    (second (re-find #"<title>(.*?)</title>" (.replaceAll body "[\t\n\r]+" " ")))))
 
 (defn is-html? [url]
   (not (nil? (re-find #"text/html"
@@ -30,11 +27,18 @@
   "Force boolean response to regex searches."
   (not (nil? (re-find #"\.(jpg|jpeg|gif|png)$" url))))
 
-(defn fetch-title-if-html [id url is-image then]
-  (when (and (not is-image)
-             (is-html? url))
-    (when-let [title (get-title url)]
-      (s/update-table :links {:title title} {:id id}))))
+(declare get-link)
+(defn fetch-title-if-html [id]
+  "Return the link, preferably after updating its title."
+  (let [{:keys [url is_image] :as link} (get-link id)]
+    (if (or is_image
+            (not (is-html? url)))
+      link
+      (if-let [title (get-title url)]
+        (do
+          (s/update-table :links {:title title} {:id id})
+          (assoc link :title title))
+        link))))
 
 (defn now->nice-format []
   "Get local now suitable for passing to nice-format->timestamp."
@@ -46,9 +50,6 @@
               (f/parse config/nice-format)
               c/to-timestamp))
 
-(defn post-process-link [id url is_image start]
-  (future (fetch-title-if-html id url is_image)))
-
 (defn insert-link
   [{:keys [id title source url is_image created_at] :as data}]
   (let [data (assoc data :created_at (if created_at
@@ -58,10 +59,8 @@
         data (assoc data :is_image (is-image? url))]
     (s/insert-into-table :links data)))
 
-(defn store-link [data]
-  (let [[{:keys [id url is_image] :as result}] (insert-link data)]
-    (post-process-link id url is_image (local-now))
-    result))
+(defn get-link [id]
+  (first (s/query (str "select * from links where id = " id))))
 
 (defn get-links
   ([] (get-links 0))

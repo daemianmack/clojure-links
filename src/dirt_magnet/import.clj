@@ -24,6 +24,11 @@
 (defn fix-data []
   (j/update! (s/db) :links {:title nil} (where {:title ""})))
 
+(defn store-link [data]
+  "Insert link and fire off title-fetch in a future."
+  (let [[{:keys [id] :as creation-result}] (links/insert-link data)]
+    (future (fetch-title-if-html id))))
+
 (defn import-mysql-dump [file]
   (with-open [rdr (io/reader (io/resource file))]
     (doseq [line (line-seq rdr)]
@@ -40,7 +45,7 @@
                       (not (re-find #"URL for" line))))
         (let [[created_at source url] (split line #"\t")
               url (re-find #"https?://[^\s]+" url)]
-          (links/store-link {:url url :source source :created_at created_at})))))
+          (store-link {:url url :source source :created_at created_at})))))
   (correct-sequence))
 
 (defn import-clojure-log [dir]
