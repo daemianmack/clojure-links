@@ -40,24 +40,15 @@
           (assoc link :title title))
         link))))
 
-(defn now->nice-format []
-  "Get local now suitable for passing to nice-format->timestamp."
-  (f/unparse config/nice-format (local-now)))
+(defn timestamp [] (c/to-timestamp (local-now)))
 
-(defn nice-format->timestamp
-  "Accept input in nice-format, transmute to SQL-storable format."
-  [date] (->> date
-              (f/parse config/nice-format)
-              c/to-timestamp))
-
-(defn insert-link
-  [{:keys [id title source url is_image created_at] :as data}]
-  (let [data (assoc data :created_at (if created_at
-                                       (nice-format->timestamp created_at)
-                                       (nice-format->timestamp (now->nice-format))))
-        data (if id data (dissoc data :id))
-        data (assoc data :is_image (is-image? url))]
-    (s/insert-into-table :links data)))
+(defn insert-link [source url]
+  (let [is_image   (is-image? url)
+        created_at (timestamp)]
+    (s/insert-into-table :links {:source source
+                                 :url url
+                                 :is_image is_image
+                                 :created_at created_at})))
 
 (defn get-link [id]
   (first (s/query (str "select * from links where id = " id))))

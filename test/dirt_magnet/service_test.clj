@@ -39,9 +39,8 @@
     (bond/with-stub [links/insert-link]
       (is (= :accepted (service/create-link {:params good-body})))
       (is (= 1 (count (bond/calls links/insert-link))))
-      (is (= {:url "http://grues.com"
-              :source "grue"}
-             ((comp first :args first) (bond/calls links/insert-link)))))))
+      (is (= ["grue" "http://grues.com"]
+             ((comp :args first) (bond/calls links/insert-link)))))))
 
 (deftest reject-create-link
   (with-redefs [config/link-acceptable? test-acceptance-fn

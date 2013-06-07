@@ -31,7 +31,7 @@
   "Pass request to user-supplied acceptance fn, referring responses to user accepted/denied fns."
   (if-not (c/link-acceptable? request)
     (c/link-rejected request)
-    (let [[{:keys [id] :as result}] (links/insert-link {:source source :url url})]
+    (let [[{:keys [id] :as result}] (links/insert-link source url)]
       (future (-> id links/fetch-title-if-html templates/str-row subs/send-to-subscribers))
       (c/link-accepted result request))))
 

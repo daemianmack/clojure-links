@@ -10,8 +10,6 @@
 
 (def links-per-page 40)
 
-(def nice-format (f/formatter "yyyy-MM-dd HH:mm:ss"))
-
 (def http-params
   "Used for fetching content-type and bodies for URLs."
   {:socket-timeout 10000 :conn-timeout 10000 :max-redirects 5})
