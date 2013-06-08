@@ -12,7 +12,14 @@
      :user        user
      :password    password}))
 
-(defn db [] (assoc (db-map) :connection (j/get-connection (db-map))))
+(defn mk-conn [] (assoc (db-map) :connection (j/get-connection (db-map))))
+
+(def conn nil)
+
+(defn with-conn []
+  (when (nil? conn)
+    (alter-var-root #'conn (constantly (mk-conn))))
+  conn)
 
 (def db-schema [:links
                 [:id          :serial]
@@ -24,17 +31,17 @@
 
 (defn apply-schema []
   (try
-    (j/db-do-commands (db) false (apply j/create-table-ddl db-schema))
-    (j/db-do-commands (db) false "CREATE UNIQUE INDEX link_id ON links (id);")
+    (j/db-do-commands (with-conn) false (apply j/create-table-ddl db-schema))
+    (j/db-do-commands (with-conn) false "CREATE UNIQUE INDEX link_id ON links (id);")
     (catch Exception e
       (println e))))
 
 (defn insert-into-table [table data]
-  (j/insert! (db) table data))
+  (j/insert! (with-conn) table data))
 
 (defn update-table [table data where-data]
-  (j/update! (db) table data (where where-data)))
+  (j/update! (with-conn) table data (where where-data)))
 
 (defn query [q]
-  (j/query (db) [q]))
+  (j/query (with-conn) [q]))
 
