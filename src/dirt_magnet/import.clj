@@ -1,6 +1,6 @@
 (ns dirt-magnet.import
   (:require [dirt-magnet.links :as links]
-            [clojure.string :refer [split]]
+            [clojure.string :refer [split replace]]
             [clojure.java.io :as io]
             [clojure.java.jdbc :as j]
             [clojure.java.jdbc.sql :refer [where]]
@@ -59,7 +59,11 @@
                       (not (re-find #"URL for" line))))
         (let [[created_at source url] (split line #"\t")
               url (re-find #"https?://[^\s]+" url)]
-          (let [[{:keys [id]}] (links/insert-link source url)]
+          (let [[{:keys [id]}] (s/insert-into-table :links
+                                                    {:url url
+                                                     :source source
+                                                     :is_image (links/is-image? url)
+                                                     :created_at (timestamp created_at)})]
             (future (links/fetch-title-if-html id)))))))
   (correct-sequence))
 
@@ -83,10 +87,10 @@
     (with-open [rdr (io/reader file)]
       (doseq [line (line-seq rdr)]
         (when (re-find #"https?://[^\s]+" line)
-          (let [[brackets-time source-colon line] (split line #"\s" 3)
+          (let [[brackets-time source line] (split line #"\s" 3)
                 yyyy-dd-mm (-> file .getName (subs 0 10))
                 created_at (str yyyy-dd-mm " " (apply str (butlast (rest brackets-time))))
-                source     (apply str (butlast source-colon))
+                source     (replace source #"[*:]" "") ; Nix trailing : and any action *
                 url        (re-find #"https?://[^\s]+" line)]
             (let [[{:keys [id]}] (s/insert-into-table :links
                                                       {:url url
