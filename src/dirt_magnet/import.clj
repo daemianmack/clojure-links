@@ -31,16 +31,27 @@
      :is_image is_image
      :created_at created_at}))
 
-(defn import-mysql-dump [file]
-  "Preserve all data on import from similar app."
+(defn import-tab-delimited-dump [file]
+  "Import from similar app in tab-delimited format. Assume all fields
+   we store are already populated."
   (with-open [rdr (io/reader (io/resource file))]
     (doseq [line (line-seq rdr)]
       (let [[id title source url _ _ created_at _ is_image] (split line #"\t")]
         (s/insert-into-table :links
                              (make-mysql-link-importable id title source url is_image created_at))
-  (correct-sequence)))))
+        (correct-sequence)))))
 
 (defn import-weechat-log [log]
+  "Import from weechat log format.
+
+   2013-05-01 13:46:17^ILORDKAHUNA^Ihttp://mashable.com/2013/04/24/william-gibson-google-glass/
+   2013-05-01 13:46:30^ILORDKAHUNA^I'Was faintly annoyed at just how interesting I found the experience.'
+   =>
+   {:url http://mashable.com/2013/04/24/william-gibson-google-glass/
+    :source LORDKAHUNA
+    :created_at #inst 2013-05-01T13:46:17.000000000-00:00}
+
+   After insert, the URL's title will be fetched and updated asynchronously."
   (with-open [rdr (io/reader (io/resource log))]
     (doseq [line (line-seq rdr)]
       (when (and (re-find #"https?://[^\s]+" line)
@@ -52,10 +63,20 @@
             (future (links/fetch-title-if-html id)))))))
   (correct-sequence))
 
-(defn import-clojure-log [dir]
-  "Enumerate all files beneath the supplied dir, find lines containing a URL,
+(defn import-clojure-logdir [dir]
+  "Enumerate all files beneath the given dir, find lines containing a URL,
    and parse the particular IRC log format thereof to persist url, source, and
-   created_at.
+   created_at. Filenames are assumed to contain the date, e.g. 2013-01-28.txt.
+
+  [18:24:09] Raynes: Ahhhhhh! XML!
+  [18:24:26] *Raynes http://tf2chan.net/dis/src/129470155772.jpg
+  [18:24:50] st3fan: yeah :-)
+  =>
+  {:url http://tf2chan.net/dis/src/129470155772.jpg
+   :source Raynes
+   :is_image true
+   :created_at #inst 2013-01-28T18:24:26.000000000-00:00}
+
    More work could be done here to clean leading/trailing punctuation out of
    URLs referenced in the middle of a sentence."
   (doseq [file (-> dir io/resource io/file file-seq rest)]
@@ -74,7 +95,3 @@
                                                        :created_at (timestamp created_at)})]
               (future (links/fetch-title-if-html id))))))))
   (correct-sequence))
-
-(defn do-full-import []
-  (import-mysql-dump "links.txt")
-  (import-weechat-log "irc_log.txt"))
