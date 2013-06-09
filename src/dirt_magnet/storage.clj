@@ -5,6 +5,7 @@
 
 
 (defn db-map []
+  "bash> export DATABASE_URL=postgres://user:password@host:port/database"
   (let [[_ user password host port database] (re-matches #"postgres://(?:(.+):(.*)@)?([^:]+)(?::(\d+))?/(.+)" (System/getenv "DATABASE_URL"))]
     {:subprotocol "postgresql"
      :subname     (str "//" host ":" port "/" database)
