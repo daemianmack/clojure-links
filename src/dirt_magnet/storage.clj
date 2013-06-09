@@ -1,7 +1,6 @@
 (ns dirt-magnet.storage
   (:require [clojure.java.jdbc :as j]
-            [clojure.java.jdbc.sql :refer [where]]
-            [clojure.java.io :as io]))
+            [clojure.java.jdbc.sql :refer [where]]))
 
 
 (defn db-map []
