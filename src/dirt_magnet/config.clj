@@ -1,7 +1,5 @@
 (ns dirt-magnet.config
-  (:require (clj-time [format :as f])
-            [ring.util.response :refer [response]]))
-
+  (:require [ring.util.response :refer [response]]))
 
 
 (def title "dirt magnet")
