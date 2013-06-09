@@ -1,6 +1,6 @@
 (ns dirt-magnet.import
   (:require [dirt-magnet.links :as links]
-            [clojure.string :refer [split replace]]
+            [clojure.string :as string]
             [clojure.java.io :as io]
             [clojure.java.jdbc :as j]
             [clojure.java.jdbc.sql :refer [where]]
@@ -36,7 +36,7 @@
    we store are already populated."
   (with-open [rdr (io/reader (io/resource file))]
     (doseq [line (line-seq rdr)]
-      (let [[id title source url _ _ created_at _ is_image] (split line #"\t")]
+      (let [[id title source url _ _ created_at _ is_image] (string/split line #"\t")]
         (s/insert-into-table :links
                              (make-mysql-link-importable id title source url is_image created_at))
         (correct-sequence)))))
@@ -57,7 +57,7 @@
       (when (and (re-find #"https?://[^\s]+" line)
                  (and (not (re-find #"Topic for" line))
                       (not (re-find #"URL for" line))))
-        (let [[created_at source url] (split line #"\t")
+        (let [[created_at source url] (string/split line #"\t")
               url (re-find #"https?://[^\s]+" url)]
           (let [[{:keys [id]}] (s/insert-into-table :links
                                                     {:url url
@@ -87,10 +87,10 @@
     (with-open [rdr (io/reader file)]
       (doseq [line (line-seq rdr)]
         (when (re-find #"https?://[^\s]+" line)
-          (let [[brackets-time source line] (split line #"\s" 3)
+          (let [[brackets-time source line] (string/split line #"\s" 3)
                 yyyy-dd-mm (-> file .getName (subs 0 10))
                 created_at (str yyyy-dd-mm " " (apply str (butlast (rest brackets-time))))
-                source     (replace source #"[*:]" "") ; Nix trailing : and any action *
+                source     (string/replace source #"[*:]" "") ; Nix trailing : and any action *
                 url        (re-find #"https?://[^\s]+" line)]
             (let [[{:keys [id]}] (s/insert-into-table :links
                                                       {:url url
