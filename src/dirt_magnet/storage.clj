@@ -1,16 +1,21 @@
 (ns dirt-magnet.storage
   (:require [clojure.java.jdbc :as j]
-            [clojure.java.jdbc.sql :refer [where]]))
+            [clojure.java.jdbc.sql :refer [where]]
+            [io.pedestal.service.log :as log]))
 
 
 (defn db-map []
   "bash> export DATABASE_URL=postgres://user:password@host:port/database"
-  (let [[_ user password host port database] (re-matches #"postgres://(?:(.+):(.*)@)?([^:]+)(?::(\d+))?/(.+)" (System/getenv "DATABASE_URL"))]
-    {:subprotocol "postgresql"
-     :subname     (str "//" host ":" port "/" database)
-     :classname   "org.postgresql.Driver"
-     :user        user
-     :password    password}))
+  (if (nil? (System/getenv "DATABASE_URL"))
+    (do
+      (log/error :error "Missing DATABASE_URL environment variable. Abandon all hope.")
+      (throw (Exception. "Missing DATABASE_URL environment variable. Abandon all hope.")))
+    (let [[_ user password host port database] (re-matches #"postgres://(?:(.+):(.*)@)?([^:]+)(?::(\d+))?/(.+)" (System/getenv "DATABASE_URL"))]
+      {:subprotocol "postgresql"
+       :subname     (str "//" host ":" port "/" database)
+       :classname   "org.postgresql.Driver"
+       :user        user
+       :password    password})))
 
 (defn mk-conn [] (assoc (db-map) :connection (j/get-connection (db-map))))
 
