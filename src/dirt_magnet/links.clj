@@ -1,6 +1,5 @@
 (ns dirt-magnet.links
-  (:require (clj-time [format :as f]
-                      [coerce :as c]
+  (:require (clj-time [coerce :as c]
                       [local :refer [local-now]])
             [io.pedestal.service.http.sse :as sse]
             [dirt-magnet.storage :as s]
