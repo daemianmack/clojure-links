@@ -25,6 +25,7 @@
 
 (deftemplate index "public/design/layout.html"
   [links page next-page? page-route]
+  [:title] (content config/title)
   [:#links :tbody] (content (map row links))
   [:#header :a] (do-> (set-attr :href page-route)
                       (content config/title))
