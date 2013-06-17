@@ -15,7 +15,10 @@
   (::bootstrap/service-fn (bootstrap/create-servlet service/service)))
 
 
-(defn test-acceptance-fn [{:keys [params]}] (= "xyzzy" (:password params)))
+(defn test-acceptance-fn [req] (let [params (service/keyword-all-params req)]
+                                 (println req)
+                                 (= "xyzzy" (:password params))))
+
 (defn stub-accepted-fn [_ _] :accepted)
 (defn stub-rejected-fn [_]   :rejected)
 
@@ -78,5 +81,6 @@
                                    (when (= ctxt 'b)
                                      (throw (java.io.IOException.))))]
       (bond/with-stub [sse/end-event-stream]
-        (subs/send-to-subscribers msg)
+        (subs/send-to-subscribers @msg)
         (is (= (dissoc @fake-data :b) @subs/subscribers))))))
+
