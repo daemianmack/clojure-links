@@ -12,6 +12,9 @@
   "Used for fetching content-type and bodies for URLs."
   {:socket-timeout 10000 :conn-timeout 10000 :max-redirects 5})
 
+(def keep-last
+  "Periodically prune link DB table to hold no more than `keep-last` items."
+  10000)
 
 (defn log [& msg]
   (when debug (apply println (concat msg "\n"))))
