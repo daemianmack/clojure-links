@@ -84,6 +84,8 @@ Load your app in a browser and enjoy.
 There are three functions in `src/dirt-magnet/config.clj` that give you
 control over the input and output of link POSTing.
 
+#### link-acceptable?
+
 `config/link-acceptable?` is passed the request, where you may do with
 it as you wish.
 
@@ -93,13 +95,19 @@ and control will pass to `config/link-accepted`.
 Otherwise, if `config/link-acceptable?` returns a falsy value, the link will be rejected,
 and control will pass to `config/link-rejected`.
 
+#### link-accepted
+
 `config/link-accepted` will be passed the request and a map representing the
 newly-created link. The usual case here will be to construct and
 return a 'success' response to the POSTer.
 
+#### link-rejected
+
 `config/link-rejected` will be passed the request. The usual case here will
 be to construct and return some response expressing
 your displeasure with their meddling.
+
+#### JSON, timestamps, and you: learning to live with disappointment
 
 If you plan to use a JSON response anywhere, first consider using edn instead.
 
@@ -116,7 +124,7 @@ If an Accept header is not specified, the system will respond with a default of 
 
 Status codes in responses are currently hand-wavy; ideally they would either return, e.g. 201/404 on accepted/rejected link POSTs or else employ a data convention bundling meaningful success/error messages one layer above HTTP.
 
-Currently this means if your API client needs to understand it has encountered an error, it has to have special knowledge of what that error message will look like.
+Currently this means if your API client needs to understand it has encountered an error, it has to have special fore-knowledge of what that error message will look like.
 
 ### Listing links
 
@@ -185,7 +193,7 @@ Server: Jetty(8.1.9.v20130131)
 
 You can POST new links via edn, json, and x-www-form-urlencoded.
 
-These examples show use of a system that is configured to respond to a successful link creation by returning that link.
+These examples are hitting a system that's configured to respond to a successful link creation by returning that link.
 
 Link title-fetching happens asynchronously via a future, so the POSTing client doesn't have to wait for the fetch to complete before recieving the result.
 
@@ -226,7 +234,7 @@ Server: Jetty(8.1.9.v20130131)
   "id":6499}]
 ```
 
-#### form-encoded
+#### x-www-form-urlencoded
 
 The Content-Type header is specified here for completeness; curl sets this Content-Type automatically when it receives the --data option.
 
