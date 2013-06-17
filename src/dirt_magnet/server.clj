@@ -3,8 +3,7 @@
   (:require [dirt-magnet.service :as service]
             [io.pedestal.service.http :as bootstrap]))
 
-(def service-instance
-  "Global var to hold service instance."
+(defonce service-instance
   nil)
 
 (defn create-server

@@ -29,29 +29,27 @@
   (stop)
   (start))
 
-
-(defn check-namespace-changes [track]
+(defn- ns-reload [track]
   (try
     (doseq [ns-sym (track)]
-      (require ns-sym :reload)
-      (compile ns-sym))
-    (catch Throwable e (.printStackTrace e)))
-  (Thread/sleep 500))
+      (require ns-sym :reload))
+    (catch Throwable e (.printStackTrace e))))
 
-(defn start-nstracker []
-  (let [track (tracker/ns-tracker ["src"])
-        compile-path *compile-path*]
-    (doto
-        (Thread.
-         (fn []
-           (binding [*compile-path* compile-path]
-             (println "THREAD" *compile-path*)
-             (while true
-               (check-namespace-changes track)))))
-      (.setDaemon true)
-      (.start))))
+(defn watch
+  ([] (watch ["src"]))
+  ([src-paths]
+     (let [track (tracker/ns-tracker src-paths)
+           done (atom false)]
+       (doto
+           (Thread. (fn []
+                      (while (not @done)
+                        (ns-reload track)
+                        (Thread/sleep 500))))
+         (.setDaemon true)
+         (.start))
+              (fn [] (swap! done not)))))
 
 (defn -main [& args]
   (println *compile-path*)
   (start)
-    (start-nstracker))
+  (watch))
