@@ -46,7 +46,7 @@
   ([table]
      (back-delete table config/keep-last))
   ([table offset]
-     (j/db-do-commands (with-conn) false (str "delete from " (name table) " where ctid = any (array (select ctid from " (name table) " order by created_at desc offset " offset "))"))))
+     (j/db-do-commands (with-conn) false (str "delete from " (name table) " where ctid = any (array (select ctid from " (name table) " order by created_at desc offset " (- 1 offset) "))"))))
 
 (defn insert-into-table [table data]
   (back-delete table)
