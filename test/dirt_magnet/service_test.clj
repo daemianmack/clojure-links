@@ -39,9 +39,11 @@
 (deftest accept-create-link
   (with-redefs [config/link-acceptable? test-acceptance-fn
                 config/link-accepted    stub-accepted-fn]
-    (bond/with-stub [links/insert-link]
+    (bond/with-stub [links/insert-link
+                     service/fetch-link-title-later]
       (is (= :accepted (service/create-link {:params good-body})))
       (is (= 1 (count (bond/calls links/insert-link))))
+      (is (= 1 (count (bond/calls service/fetch-link-title-later))))
       (is (= ["grue" "http://grues.com"]
              ((comp :args first) (bond/calls links/insert-link)))))))
 
@@ -59,13 +61,13 @@
   (with-redefs [config/link-acceptable? test-acceptance-fn
                 config/link-accepted    (fn [_ r] (merge r {:status 201}))]
     (bond/with-stub [storage/insert-into-table
-                     links/fetch-title-if-html]
+                     service/fetch-link-title-later]
       (is (= 201 (:status (response-for service
                                         :post "/links"
                                         :body (form-encode good-body)
                                         :headers headers))))
       (is (= 1 (count (bond/calls storage/insert-into-table))))
-      (is (= 1 (count (bond/calls links/fetch-title-if-html))))
+      (is (= 1 (count (bond/calls service/fetch-link-title-later))))
       (is (= {:is_image false
               :source "grue"
               :url "http://grues.com"}

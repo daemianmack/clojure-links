@@ -44,6 +44,9 @@
         keyword-fn (fn [result [k v]] (conj result {(keyword k) v}))]
     (reduce keyword-fn {} params)))
 
+(defn fetch-link-title-later [{id :id}]
+  (future (-> id links/fetch-title-if-html templates/str-row subs/send-to-subscribers)))
+
 (defn create-link [request]
   "Pass request to user-supplied acceptance fn, referring responses to user accepted/denied fns."
   (let [params (keyword-all-params request)
@@ -52,7 +55,7 @@
     (if-not (c/link-acceptable? request)
       (c/link-rejected request)
       (let [result (links/insert-link source url)]
-        (future (-> result first :id links/fetch-title-if-html templates/str-row subs/send-to-subscribers))
+        (fetch-link-title-later (first result))
         (c/link-accepted result request)))))
 
 (defn register-user-for-updates
