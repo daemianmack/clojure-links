@@ -26,8 +26,10 @@
 
 (defn link-accepted [creation-result request]
   (log "+++ Accepted a POST for params" (:params request))
-  (response creation-result))
+  (response {:status-code 201
+             :message creation-result}))
 
 (defn link-rejected [request]
   (log "--- Rejected a POST for request" request)
-  (response {:status "Nope."}))
+  (response {:status-code 400
+             :message "Nope."}))

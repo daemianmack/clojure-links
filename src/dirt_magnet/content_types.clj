@@ -1,5 +1,6 @@
 (ns dirt-magnet.content-types
-  (:require [pedestal.content-negotiation :as cn])
+  (:require [clojure.walk :refer [postwalk]]
+            [pedestal.content-negotiation :as cn])
   (:import  (java.io OutputStreamWriter)
             (java.util.zip GZIPOutputStream)))
 
@@ -18,22 +19,17 @@
           (printer obj))
         (.flush out)))))
 
+(defn timestamp->epoch [x]
+  (if (isa? (class x) java.util.Date)
+    (.getTime x)
+    x))
+
 (defn wrap-json-dates [orig-fn]
   "Wrap pedestal.content-negotiation/stream-writer so that it doesn't see
    raw timestamps for a json response."
-  (let [timestamp->epoch #(reduce-kv
-                           (fn [m k v]
-                             (assoc m k (if (isa? (class v) java.util.Date)
-                                          (.getTime v)
-                                          v)))
-                           {} %)]
-    (fn [obj]
-      ;; Accommodate application responses
-      ;; but also allow config fns flexibility.
-      (cond
-       (sequential? obj) (orig-fn (map timestamp->epoch obj))
-       (map? obj)        (orig-fn (timestamp->epoch obj))
-       :else             (orig-fn obj)))))
+  (fn [obj]
+    (let [safe-for-json (postwalk timestamp->epoch obj)]
+      (orig-fn safe-for-json))))
 
 (defn with-json-date-wrapping [routes]
   "Modify given routes of content-type json to pass through our wrapper fn first."

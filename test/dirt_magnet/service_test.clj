@@ -1,5 +1,6 @@
 (ns dirt-magnet.service-test
   (:require [clojure.test :refer [deftest is]]
+            [clojure.edn :refer [read-string]]
             [io.pedestal.service.test :refer :all]
             [io.pedestal.service.http :as bootstrap]
             [io.pedestal.service.http.sse :as sse]
@@ -16,7 +17,6 @@
 
 
 (defn test-acceptance-fn [req] (let [params (service/keyword-all-params req)]
-                                 (println req)
                                  (= "xyzzy" (:password params))))
 
 (defn stub-accepted-fn [_ _] :accepted)
@@ -59,13 +59,17 @@
 
 (deftest exercise-create-path
   (with-redefs [config/link-acceptable? test-acceptance-fn
-                config/link-accepted    (fn [_ r] (merge r {:status 201}))]
+                config/link-accepted    (constantly (response {:status-code 201
+                                                               :message "Created"}))]
     (bond/with-stub [storage/insert-into-table
                      service/fetch-link-title-later]
-      (is (= 201 (:status (response-for service
-                                        :post "/links"
-                                        :body (form-encode good-body)
-                                        :headers headers))))
+      (is (= 201 (-> (response-for service
+                                   :post "/links"
+                                   :body (form-encode good-body)
+                                   :headers headers)
+                     :body
+                     read-string
+                     :status-code)))
       (is (= 1 (count (bond/calls storage/insert-into-table))))
       (is (= 1 (count (bond/calls service/fetch-link-title-later))))
       (is (= {:is_image false

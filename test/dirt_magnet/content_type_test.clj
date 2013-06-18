@@ -8,7 +8,7 @@
             [dirt-magnet.links :as links]
             [dirt-magnet.storage :as storage]
             [ring.util.response :refer [response]]
-            [clojure.data.json :as json]
+            [clojure.data.json :as j]
             [clojure.edn :as edn]))
 
 (def service
@@ -53,7 +53,8 @@
 
 (defn response-for-creating-link [post-body post-headers]
   (with-redefs [config/link-acceptable? test-acceptance-fn
-                config/link-accepted    (constantly (response fake-link-feed))]
+                config/link-accepted    (constantly (response {:status-code 201
+                                                     :message fake-link-feed}))]
     (bond/with-stub [storage/insert-into-table
                      links/fetch-title-if-html]
       (response-for service
@@ -63,39 +64,42 @@
 
 (deftest test-link-creation-returns-correct-response-type
   (testing "request for json returns json"
-    (let [resp (response-for-creating-link (json/write-str good-body)
+    (let [resp (response-for-creating-link (j/write-str good-body)
                                            {"Content-Type" "application/json"
                                             "Accept"       "application/json"})]
-      (is (response-is-content-type? "application/json" resp))))
+      (is (response-is-content-type? "application/json" resp))
+      (is (= 201 (-> resp :body j/read-str (get "status-code"))))))
 
   (testing "return-type-defaults-to-edn"
     (let [resp (response-for-creating-link
                 (str good-body)
                 {"Content-Type" "application/edn"})]
-      (is (response-is-content-type? "application/edn" resp))))
+      (is (response-is-content-type? "application/edn" resp))
+      (is (= 201 (-> resp :body read-string :status-code)))))
 
   (testing "posting-json-requesting-edn-returns-edn"
     (let [resp (response-for-creating-link
-                (json/write-str good-body)
+                (j/write-str good-body)
                 {"Content-Type" "application/json"
                  "Accept"       "application/edn"})]
-      (is (response-is-content-type? "application/edn" resp)))))
+      (is (response-is-content-type? "application/edn" resp))
+      (is (= 201 (-> resp :body read-string :status-code))))))
 
-;; TODO: Use data.generators or at least custom JSON serializer to
-;; automate the expected half?
 (def json-response-fns
-  [["String.",
-    "\"String.\""]
-   [{:status "Map." :at (java.util.Date. 1)},
-    "{\"at\":1, \"status\":\"Map.\"}"]
-   [(repeat 2 {:status "Vector o' maps." :at (java.sql.Timestamp. 1)}),
-    "[{\"at\":1, \"status\":\"Vector o' maps.\"},\n {\"at\":1, \"status\":\"Vector o' maps.\"}]"]])
+  [{:original "String.",
+    :expected "String."}
+   {:original {:status "Map." :at (java.util.Date. 1)}
+    :expected {"at" 1, "status" "Map."}}
+   {:original (repeat 2 {:format "Vector o' maps." :at (java.sql.Timestamp. 1)}),
+    :expected [{"format" "Vector o' maps.", "at" 1} {"format" "Vector o' maps.", "at" 1}]}])
 
-(deftest test-semi-arbitrary-data-response-yields-correct-json-data
-  (doseq [[attempt expected] json-response-fns]
-    (with-redefs [config/link-rejected (constantly (response attempt))]
+(deftest test-semi-arbitrary-data-response-yields-correct-json-data-through-interceptor
+  (doseq [{:keys [original expected]} json-response-fns]
+    (with-redefs [config/link-rejected (constantly (response {:status-code 400
+                                                    :message original}))]
       (testing "json return path properly mangles response"
-        (let [resp (response-for-creating-link (json/write-str bad-body)
+        (let [resp (response-for-creating-link (j/write-str bad-body)
                                                {"Content-Type" "application/json"
                                                 "Accept"       "application/json"})]
-          (is (= (:body resp) expected)))))))
+          (is (= expected (-> resp :body j/read-str (get "message"))))
+          (is (= 400 (-> resp :body j/read-str (get "status-code")))))))))
