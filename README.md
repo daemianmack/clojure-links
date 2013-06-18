@@ -1,11 +1,12 @@
 # What's this?
 
 An app that accepts POSTs of interesting URLs, fetches their titles if
-possible, and displays them with attribution in a
-paginated stream, in realtime, using Server Sent Events.
+possible, and displays them with attribution in a realtime stream using Server Sent Events.
 
-The use case for which it was created was to accept POSTs from a bot
-capturing URLs out of IRC, but it will accept POSTs from anything and
+There is a small read/write API.
+
+The primordial use case for this app was to accept POSTs from a bot
+capturing URLs out of IRC, but it will accept any well-formed POST and
 tries not to enforce any data constraints apart from a simple schema.
 
 This is a [Pedestal service](http://pedestal.io) targeting Heroku using Postgres for persistence
@@ -37,6 +38,7 @@ Email: daemianmack@gmail.com
 Password (typing will be hidden):
 Authentication successful.
 ```
+
 
 Create the app...
 
@@ -111,9 +113,7 @@ your displeasure with their meddling.
 
 If you plan to use a JSON response anywhere, first consider using edn instead.
 
-If you must use JSON, note that JSON responses containing timestamps will pass through special handling to convert any `java.util.Date` descendent into epoch time. 
-
-To cooperate with this handling, you can respond with a map or a sequence of maps. Other values will pass unmolested, and if they contain timestamps, JSON serialization will blow up.
+If you must use JSON, note that JSON responses containing timestamps will pass through special handling to convert any `java.util.Date` descendent into epoch time.
 
 
 # Minimal web API
@@ -122,9 +122,12 @@ The read/write API allows edn, JSON, and HTML, and requires the Content-Type and
 
 If an Accept header is not specified, the system will respond with a default of edn.
 
-Status codes in responses are currently hand-wavy; ideally they would either return, e.g. 201/404 on accepted/rejected link POSTs or else employ a data convention bundling meaningful success/error messages one layer above HTTP.
+The [content negotiation interceptor](https://github.com/ToBeReplaced/pedestal-content-negotiation) doesn't handle non-success status codes, so responses will need to tunnel their own status information inside the body as shown in `dirt-magnet.config`...
 
-Currently this means if your API client needs to understand it has encountered an error, it has to have special fore-knowledge of what that error message will look like.
+```clojure
+(response {:status-code 400
+           :message "Nope."})
+```
 
 ### Listing links
 
@@ -133,16 +136,21 @@ You can GET a link listing via edn, JSON, and HTML.
 #### edn
 
 ```
-> curl -i http://0.0.0.0:8080/ -H "Accept: application/edn"
+> curl -i http://damp-woodland-3654.herokuapp.com/ -H "Accept: application/edn"
 HTTP/1.1 200 OK
-Date: Fri, 14 Jun 2013 01:44:47 GMT
-Access-Control-Allow-Origin:
 Content-Encoding: identity
 Content-Type: application/edn;charset=utf-8
-Transfer-Encoding: chunked
+Date: Sun, 16 Jun 2013 16:59:11 GMT
 Server: Jetty(8.1.9.v20130131)
+transfer-encoding: chunked
+Connection: keep-alive
 
-({:created_at #inst "2013-06-14T01:07:56.503000000-00:00", :is_image false, :url "http://zombo.com", :source "zombo", :title nil, :id 6497} {...}
+({:created_at #inst "2013-06-16T13:02:38.101000000-00:00",
+:is_image false,
+:url "http://zombo.com",
+:source "zombo",
+:title "ZOMBO",
+:id 4} ...)
 ```
 
 #### JSON
@@ -150,22 +158,21 @@ Server: Jetty(8.1.9.v20130131)
 Note that for dates you get epoch timestamps.
 
 ```
-> curl -i http://0.0.0.0:8080/ -H "Accept: application/json"
+> curl -i http://damp-woodland-3654.herokuapp.com/ -H "Accept: application/json"
 HTTP/1.1 200 OK
-Date: Fri, 14 Jun 2013 01:43:35 GMT
-Access-Control-Allow-Origin:
 Content-Encoding: identity
 Content-Type: application/json;charset=utf-8
-Transfer-Encoding: chunked
+Date: Sun, 16 Jun 2013 17:00:37 GMT
 Server: Jetty(8.1.9.v20130131)
+transfer-encoding: chunked
+Connection: keep-alive
 
-[{"created_at":1371172076503,
-  "is_image":false,
-  "url":"http:\/\/zombo.com",
-  "source":"zombo",
-  "title":null,
-  "id":6497},
- {...}
+[{"created_at":1371418084000,
+"is_image":false,
+"url":"http:\/\/zombo.com",
+"source":"zombo",
+"title":"ZOMBO",
+"id":4}, ...]
 ```
 
 #### HTML
@@ -173,14 +180,14 @@ Server: Jetty(8.1.9.v20130131)
 Really you should just be doing this in a browser.
 
 ```
-> curl -i http://0.0.0.0:8080/ -H "Accept: text/html"
+> curl -i http://damp-woodland-3654.herokuapp.com/ -H "Accept: text/html"
 HTTP/1.1 200 OK
-Date: Fri, 14 Jun 2013 01:54:06 GMT
-Access-Control-Allow-Origin:
 Content-Encoding: identity
 Content-Type: text/html;charset=UTF-8
-Transfer-Encoding: chunked
+Date: Sun, 16 Jun 2013 17:02:01 GMT
 Server: Jetty(8.1.9.v20130131)
+transfer-encoding: chunked
+Connection: keep-alive
 
 <html>
 
@@ -193,23 +200,24 @@ Server: Jetty(8.1.9.v20130131)
 
 You can POST new links via edn, json, and x-www-form-urlencoded.
 
-These examples are hitting a system that's configured to respond to a successful link creation by returning that link.
+These examples are hitting a system that's configured to respond to a successful link creation by returning that link, as seen in the stock `src/dirt-magnet/config.clj`.
 
-Link title-fetching happens asynchronously via a future, so the POSTing client doesn't have to wait for the fetch to complete before recieving the result.
+Link title-fetching happens asynchronously via a future, so the POSTing client doesn't have to wait for the fetch to complete before receiving the result.
 
 #### edn
 
 ```
-> curl -i -X POST --data '{:password "professor-falken" :url "http://zombo.com/", :source "zombo"}' http://0.0.0.0:8080/links -H "Content-Type: application/edn" -H "Accept: application/edn"
+> curl -i -X POST --data '{:password "professor-falken" :url "http://zombo.com/", :source "zombo"}' http://damp-woodland-3654.herokuapp.com/links -H "Content-Type: application/edn" -H "Accept: application/edn"
 HTTP/1.1 200 OK
-Date: Fri, 14 Jun 2013 09:53:19 GMT
-Access-Control-Allow-Origin:
 Content-Encoding: identity
 Content-Type: application/edn;charset=utf-8
-Transfer-Encoding: chunked
+Date: Sun, 16 Jun 2013 20:43:54 GMT
 Server: Jetty(8.1.9.v20130131)
+transfer-encoding: chunked
+Connection: keep-alive
 
-({:created_at #inst "2013-06-14T09:53:19.676000000-00:00", :is_image false, :url "http://zombo.com/", :source "zombo", :title nil, :id 6498})
+{:status-code 201, :message ({:created_at #inst "2013-06-16T20:43:54.670000000-00:00", :is_image false, :url "http://zombo.com/", :source "zombo", :title nil, :id 5})}
+
 ```
 
 #### JSON
@@ -217,21 +225,23 @@ Server: Jetty(8.1.9.v20130131)
 Note that for dates you get epoch timestamps.
 
 ```
-> curl -i -X POST --data '{"password":"professor-falken", "url":"http://zombo.com/", "source":"zombo"}' http://0.0.0.0:8080/links -H "Content-Type: application/json" -H "Accept: application/json"
+> curl -i -X POST --data '{"password":"professor-falken", "url":"http://zombo.com/", "source":"zombo"}' http://damp-woodland-3654.herokuapp.com/links -H "Content-Type: application/json" -H "Accept: application/json"
 HTTP/1.1 200 OK
-Date: Fri, 14 Jun 2013 09:54:42 GMT
-Access-Control-Allow-Origin:
 Content-Encoding: identity
 Content-Type: application/json;charset=utf-8
-Transfer-Encoding: chunked
+Date: Sun, 16 Jun 2013 20:52:07 GMT
 Server: Jetty(8.1.9.v20130131)
+transfer-encoding: chunked
+Connection: keep-alive
 
-[{"created_at":1371203682358,
-  "is_image":false,
-  "url":"http:\/\/zombo.com\/",
-  "source":"zombo",
-  "title":null,
-  "id":6499}]
+{"status-code":201,
+ "message":
+ [{"created_at":1371418084000,
+ "is_image":false,
+ "url":"http:\/\/zombo.com\/",
+ "source":"zombo",
+ "title":null,
+ "id":6}]}
 ```
 
 #### x-www-form-urlencoded
@@ -241,16 +251,24 @@ The Content-Type header is specified here for completeness; curl sets this Conte
 Note there is no corresponding return type configured, so we receive the system default of edn.
 
 ```
-> curl -i -X POST --data "password=professor-falken&url=http://zombo.com/&source=zombo" http://0.0.0.0:8080/links -H "Content-Type: application/x-www-form-urlencoded"
+> curl -i -X POST --data "password=professor-falken&url=http://zombo.com/&source=zombo" \
+http://damp-woodland-3654.herokuapp.com/links -H "Content-Type: application/x-www-form-urlencoded"
 HTTP/1.1 200 OK
-Date: Fri, 14 Jun 2013 09:55:57 GMT
-Access-Control-Allow-Origin:
 Content-Encoding: identity
 Content-Type: application/edn;charset=utf-8
-Transfer-Encoding: chunked
+Date: Sun, 16 Jun 2013 20:54:22 GMT
 Server: Jetty(8.1.9.v20130131)
+transfer-encoding: chunked
+Connection: keep-alive
 
-({:created_at #inst "2013-06-14T09:55:57.873000000-00:00", :is_image false, :url "http://zombo.com/", :source "zombo", :title nil, :id 6500})
+{:status-code 201,
+:message
+({:created_at #inst "2013-06-16T20:54:22.052000000-00:00",
+:is_image false,
+:url "http://zombo.com/",
+:source "zombo",
+:title nil,
+:id 7})}
 ```
 
 # Import
