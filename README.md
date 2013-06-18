@@ -75,10 +75,13 @@ Apply the schema...
 
 Test the POST interface...
 
-`> curl -X POST --data "url=http://www.example.com&source=testguy&password=professor-falken" \
+```
+> curl -X POST --data "url=http://www.example.com&source=testguy&password=professor-falken" \
 http://damp-woodland-3654.herokuapp.com/links
 
-{:created_at #inst "2013-06-09T18:49:33.248000000-00:00", :is_image false, :url "http://www.example.com", :source "testguy", :title nil, :id 1}`
+{:created_at #inst "2013-06-09T18:49:33.248000000-00:00", :is_image false, 
+:url "http://www.example.com", :source "testguy", :title nil, :id 1}
+```
 
 Load your app in a browser and enjoy.
 
