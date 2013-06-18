@@ -75,7 +75,9 @@ Apply the schema...
 
 Test the POST interface...
 
-`> curl -X POST --data "url=http://www.example.com&source=testguy&password=professor-falken" http://damp-woodland-3654.herokuapp.com/links
+`> curl -X POST --data "url=http://www.example.com&source=testguy&password=professor-falken" \
+http://damp-woodland-3654.herokuapp.com/links
+
 {:created_at #inst "2013-06-09T18:49:33.248000000-00:00", :is_image false, :url "http://www.example.com", :source "testguy", :title nil, :id 1}`
 
 Load your app in a browser and enjoy.
@@ -137,6 +139,7 @@ You can GET a link listing via edn, JSON, and HTML.
 
 ```
 > curl -i http://damp-woodland-3654.herokuapp.com/ -H "Accept: application/edn"
+
 HTTP/1.1 200 OK
 Content-Encoding: identity
 Content-Type: application/edn;charset=utf-8
@@ -159,6 +162,7 @@ Note that for dates you get epoch timestamps.
 
 ```
 > curl -i http://damp-woodland-3654.herokuapp.com/ -H "Accept: application/json"
+
 HTTP/1.1 200 OK
 Content-Encoding: identity
 Content-Type: application/json;charset=utf-8
@@ -181,6 +185,7 @@ Really you should just be doing this in a browser.
 
 ```
 > curl -i http://damp-woodland-3654.herokuapp.com/ -H "Accept: text/html"
+
 HTTP/1.1 200 OK
 Content-Encoding: identity
 Content-Type: text/html;charset=UTF-8
@@ -190,7 +195,6 @@ transfer-encoding: chunked
 Connection: keep-alive
 
 <html>
-
   <head>
     <title>dirt magnet</title>
 ...
@@ -207,7 +211,9 @@ Link title-fetching happens asynchronously via a future, so the POSTing client d
 #### edn
 
 ```
-> curl -i -X POST --data '{:password "professor-falken" :url "http://zombo.com/", :source "zombo"}' http://damp-woodland-3654.herokuapp.com/links -H "Content-Type: application/edn" -H "Accept: application/edn"
+> curl -i -X POST --data '{:password "professor-falken" :url "http://zombo.com/", :source "zombo"}' \
+http://damp-woodland-3654.herokuapp.com/links -H "Content-Type: application/edn" -H "Accept: application/edn"
+
 HTTP/1.1 200 OK
 Content-Encoding: identity
 Content-Type: application/edn;charset=utf-8
@@ -216,7 +222,14 @@ Server: Jetty(8.1.9.v20130131)
 transfer-encoding: chunked
 Connection: keep-alive
 
-{:status-code 201, :message ({:created_at #inst "2013-06-16T20:43:54.670000000-00:00", :is_image false, :url "http://zombo.com/", :source "zombo", :title nil, :id 5})}
+{:status-code 201,
+:message
+({:created_at #inst "2013-06-16T20:43:54.670000000-00:00",
+:is_image false,
+:url "http://zombo.com/",
+:source "zombo",
+:title nil,
+:id 5})}
 
 ```
 
@@ -225,7 +238,10 @@ Connection: keep-alive
 Note that for dates you get epoch timestamps.
 
 ```
-> curl -i -X POST --data '{"password":"professor-falken", "url":"http://zombo.com/", "source":"zombo"}' http://damp-woodland-3654.herokuapp.com/links -H "Content-Type: application/json" -H "Accept: application/json"
+> curl -i -X POST --data '{"password":"professor-falken", "url":"http://zombo.com/", \
+"source":"zombo"}' http://damp-woodland-3654.herokuapp.com/links \
+-H "Content-Type: application/json" -H "Accept: application/json"
+
 HTTP/1.1 200 OK
 Content-Encoding: identity
 Content-Type: application/json;charset=utf-8
@@ -253,6 +269,7 @@ Note there is no corresponding return type configured, so we receive the system 
 ```
 > curl -i -X POST --data "password=professor-falken&url=http://zombo.com/&source=zombo" \
 http://damp-woodland-3654.herokuapp.com/links -H "Content-Type: application/x-www-form-urlencoded"
+
 HTTP/1.1 200 OK
 Content-Encoding: identity
 Content-Type: application/edn;charset=utf-8
