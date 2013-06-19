@@ -1,6 +1,6 @@
 (ns dirt-magnet.config
-  (:require [clojure.java.jdbc :as j]
-            [dirt-magnet.storage :as s]
+  (:require [clojure.java.jdbc :as jdbc]
+            [dirt-magnet.storage :as storage]
             [ring.util.response :refer [response]]))
 
 
@@ -28,11 +28,12 @@
 
 (defn input-gate []
   "Delete next-to-last link so we don't get swamped with spam."
-  (j/db-do-commands (s/with-conn) false "delete from links where ctid = any (array (select ctid from links order by created_at desc offset 1 limit 1))")
+  (jdbc/db-do-commands (storage/with-conn) false "delete from links where ctid = any (array (select ctid from links order by created_at desc offset 1 limit 1))"))
 
-  (defn link-accepted [creation-result request]
+(defn link-accepted [creation-result request]
   (log "+++ Accepted a POST for params" (:params request))
   (input-gate)
+  (storage/back-delete :links keep-last)
   (response {:status-code 201
              :message creation-result}))
 

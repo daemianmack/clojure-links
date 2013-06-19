@@ -1,8 +1,7 @@
 (ns dirt-magnet.storage
   (:require [clojure.java.jdbc :as j]
             [clojure.java.jdbc.sql :refer [where]]
-            [io.pedestal.service.log :as log]
-            [dirt-magnet.config :as config]))
+            [io.pedestal.service.log :as log]))
 
 
 (defn db-map []
@@ -42,14 +41,10 @@
     (catch Exception e
       (println e))))
 
-(defn back-delete
-  ([table]
-     (back-delete table config/keep-last))
-  ([table offset]
-     (j/db-do-commands (with-conn) false (str "delete from " (name table) " where ctid = any (array (select ctid from " (name table) " order by created_at desc offset " (- offset 1) "))"))))
+(defn back-delete [table offset]
+  (j/db-do-commands (with-conn) false (str "delete from " (name table) " where ctid = any (array (select ctid from " (name table) " order by created_at desc offset " offset "))")))
 
 (defn insert-into-table [table data]
-  (back-delete table)
   (j/insert! (with-conn) table data))
 
 (defn update-table [table data where-data]

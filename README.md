@@ -310,12 +310,14 @@ an `.env` file in the format...
 
 After populating your local database, take a dump...
 
-`PGPASSWORD=<password> /usr/local/bin/pg_dump -Fc --no-acl --no-owner -h localhost -U <username> <database> > db.dump`
+`PGPASSWORD=<password> /usr/local/bin/pg_dump -Fc --no-acl --no-owner \
+-h localhost -U <username> <database> > db.dump`
 
 
 Then perform the restore against the remote Heroku database...
 
-`PGPASSWORD=<heroku_password> pg_restore --verbose --clean --no-acl --no-owner -h <heroku_host> -U <heroku_username> -d <heroku_database> -p <heroku_port> db.dump`
+`PGPASSWORD=<heroku_password> pg_restore --verbose --clean --no-acl --no-owner \
+-h <heroku_host> -U <heroku_username> -d <heroku_database> -p <heroku_port> db.dump`
 
 
 # Testing
