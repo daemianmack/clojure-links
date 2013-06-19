@@ -1,5 +1,6 @@
 (ns dirt-magnet.config
-  (:require [ring.util.response :refer [response]]))
+  (:require [dirt-magnet.storage :as storage]
+            [ring.util.response :refer [response]]))
 
 
 (def title "dirt magnet")
@@ -26,6 +27,7 @@
 
 (defn link-accepted [creation-result request]
   (log "+++ Accepted a POST for params" (:params request))
+  (storage/back-delete :links keep-last)
   (response {:status-code 201
              :message creation-result}))
 
