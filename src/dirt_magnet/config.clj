@@ -1,8 +1,10 @@
 (ns dirt-magnet.config
-  (:require [ring.util.response :refer [response]]))
+  (:require [clojure.java.jdbc :as j]
+            [dirt-magnet.storage :as s]
+            [ring.util.response :refer [response]]))
 
 
-(def title "dirt magnet")
+(def title "#clojure")
 
 (def debug true)
 
@@ -22,10 +24,15 @@
 
 (defn link-acceptable? [{:keys [params]}]
   (log "link-acceptable? is considering a POST with params" params)
-  (= "professor-falken" (:password params)))
+  (= "clojure" (:password params)))
 
-(defn link-accepted [creation-result request]
+(defn input-gate []
+  "Delete next-to-last link so we don't get swamped with spam."
+  (j/db-do-commands (s/with-conn) false "delete from links where ctid = any (array (select ctid from links order by created_at desc offset 1 limit 1))")
+
+  (defn link-accepted [creation-result request]
   (log "+++ Accepted a POST for params" (:params request))
+  (input-gate)
   (response {:status-code 201
              :message creation-result}))
 
