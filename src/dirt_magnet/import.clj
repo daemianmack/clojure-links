@@ -68,7 +68,8 @@
   (correct-sequence))
 
 (defn import-clojure-logdir [dir]
-  "Enumerate all files beneath the given dir, find lines containing a URL,
+  "Having delicately spidered portions of http://www.raynes.me/logs/irc.freenode.net/clojure/
+   -- thanks Raynes! -- enumerate all files beneath the given local dir, find lines containing a URL,
    and parse the particular IRC log format thereof to persist url, source, and
    created_at. Filenames are assumed to contain the date, e.g. 2013-01-28.txt.
 
