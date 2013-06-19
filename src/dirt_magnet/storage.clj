@@ -42,7 +42,7 @@
       (println e))))
 
 (defn back-delete [table offset]
-  (j/db-do-commands (with-conn) false (str "delete from " (name table) " where ctid = any (array (select ctid from " (name table) " order by created_at desc offset " (- offset 1) "))")))
+  (j/db-do-commands (with-conn) false (str "delete from " (name table) " where ctid = any (array (select ctid from " (name table) " order by created_at desc offset " offset "))")))
 
 (defn insert-into-table [table data]
   (j/insert! (with-conn) table data))
